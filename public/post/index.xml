@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Dinesh&#39;s 2024 Election Prediction</title>
-    <link>http://localhost:1313/election-prediction/post/</link>
+    <link>http://localhost:4321/usa-2024-election-prediction/post/</link>
     <description>Recent content in Posts on Dinesh&#39;s 2024 Election Prediction</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 15 Sep 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/election-prediction/post/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:4321/usa-2024-election-prediction/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Economy and Elections: Analyzing the Relationship</title>
-      <link>http://localhost:1313/election-prediction/post/2024/09/15/week-2/</link>
+      <link>http://localhost:4321/usa-2024-election-prediction/post/2024/09/15/week-2/</link>
       <pubDate>Sun, 15 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/election-prediction/post/2024/09/15/week-2/</guid>
+      <guid>http://localhost:4321/usa-2024-election-prediction/post/2024/09/15/week-2/</guid>
       <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;&#xA;&lt;p&gt;In this post, we&amp;rsquo;ll explore the intricate relationship between economic indicators and election outcomes in the United States. Our primary focus will be on GDP growth as a key economic measure, analyzing its correlation with the incumbent party&amp;rsquo;s vote share in presidential elections. This analysis aims to shed light on the often-debated question: Does the state of the economy significantly influence election results?&lt;/p&gt;&#xA;&lt;h2 id=&#34;visualizing-the-relationship&#34;&gt;Visualizing the Relationship&lt;/h2&gt;&#xA;&lt;p&gt;Our initial visualization reveals a complex picture. While there&amp;rsquo;s a general positive trend between second-quarter GDP growth and the incumbent party&amp;rsquo;s vote share, it&amp;rsquo;s not a straightforward relationship. Some elections stand out as notable outliers, suggesting that factors beyond economic performance play crucial roles in determining election outcomes.&lt;/p&gt;</description>
     </item>
   </channel>

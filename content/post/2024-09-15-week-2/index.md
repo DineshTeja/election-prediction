@@ -126,7 +126,7 @@ Key Findings:
 1. Incumbent Presidents vs. Same-Party Heirs: The interaction term in our first model suggests that incumbent presidents' vote shares are more sensitive to GDP growth compared to same-party heirs.
 2. Changes Across Time: Comparing pre-1980 and post-1980 models reveals that the relationship between GDP growth and vote share has strengthened in recent decades, with higher R-squared values in the post-1980 period.
 
-![plot of chunk unnamed-chunk-3](index_files/figure-html/unnamed-chunk-3-1.png)
+![plot of chunk unnamed-chunk-4](index_files/figure-html/unnamed-chunk-4-1.png)
 
 Interpretation
 1. Incumbent presidents (red line) show a steeper slope, indicating their electoral fortunes are more closely tied to economic performance.
