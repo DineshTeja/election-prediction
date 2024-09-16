@@ -1,4 +1,4 @@
-baseurl: "https://chojeq.com/usa-2024-election-prediction"  # please update this to your actual URL
+baseurl: "https://dineshteja.github.io/election-prediction/"  # please update this to your actual URL
 languageCode: "en-us"
 title: "Dinesh's 2024 Election Prediction"
 theme: "hugo-xmin"
@@ -19,7 +19,7 @@ menu:
 
 params:
   description: "Forecasting the 2024 US Presidential Race: Insights from Harvard's GOV 1347"
-  footer: "&copy; Dinesh 2024 -- {Year} | [Github](https://github.com/dineshteja/usa-2024-election-prediction)"
+  footer: "&copy; Dinesh 2024 -- {Year} | [Github](https://github.com/dineshteja/election-prediction)"
 markup:
   highlight:
     codeFences: false
