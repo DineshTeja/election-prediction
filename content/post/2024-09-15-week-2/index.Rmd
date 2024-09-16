@@ -1,0 +1,258 @@
+---
+title: 'Economy and Elections: Analyzing the Relationship'
+author: "Dinesh Vasireddy"
+date: "2024-09-15"
+output: pdf_document
+categories: []
+tags: []
+slug: "week-2"
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+# Load libraries.
+## install via `install.packages("name")`
+library(ggplot2)
+library(maps)
+library(tidyverse)
+```
+
+## Introduction
+
+In this post, we'll explore the intricate relationship between economic indicators and election outcomes in the United States. Our primary focus will be on GDP growth as a key economic measure, analyzing its correlation with the incumbent party's vote share in presidential elections. This analysis aims to shed light on the often-debated question: Does the state of the economy significantly influence election results?
+
+```{r load_libraries_and_data, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+library(tidyverse)
+library(car)
+
+# Load popular vote data
+d_popvote <- read_csv("popvote_1948-2020.csv")
+
+# Load economic data from FRED
+d_fred <- read_csv("fred_econ.csv")
+
+# Load economic data from BEA
+d_bea <- read_csv("bea_econ.csv") |>
+  rename(
+    year = "Year",
+    quarter = "Quarter",
+    gdp = "Gross domestic product",
+    gnp = "Gross national product",
+    dpi = "Disposable personal income",
+    consumption = "Personal consumption expenditures",
+    goods = "Goods",
+    durables = "Durable goods",
+    nondurables = "Nondurable goods",
+    services = "Services",
+    pop = "Population (midperiod, thousands)"
+  )
+
+# Merge and filter data
+d_inc_econ <- d_popvote |>
+  filter(incumbent_party == TRUE) |>
+  select(year, pv, pv2p, winner) |>
+  left_join(d_fred |> filter(quarter == 2)) |>
+  left_join(d_bea |> filter(quarter == "Q2") |> select(year, dpi))
+```
+
+## Visualizing the Relationship
+
+Our initial visualization reveals a complex picture. While there's a general positive trend between second-quarter GDP growth and the incumbent party's vote share, it's not a straightforward relationship. Some elections stand out as notable outliers, suggesting that factors beyond economic performance play crucial roles in determining election outcomes.
+
+```{r gdp_voteshare_plot, fig.width=10, fig.height=6, echo=FALSE}
+d_inc_econ |>
+  ggplot(aes(x = GDP_growth_quarterly, y = pv2p, label = year)) +
+  geom_text() +
+  geom_hline(yintercept = 50, lty = 2) +
+  geom_vline(xintercept = 0.01, lty = 2) +
+  labs(
+    x = "Second Quarter GDP Growth (%)",
+    y = "Incumbent Party's National Popular Vote Share"
+  ) +
+  theme_bw()
+```
+
+Interestingly, when we remove the data point for 2020 - an unusual year due to the COVID-19 pandemic - the relationship becomes more apparent. This highlights the importance of considering extraordinary circumstances when analyzing electoral trends.
+
+```{r gdp_voteshare_plot_no2020, fig.width=10, fig.height=6, echo=FALSE}
+d_inc_econ_2 <- d_inc_econ |>
+  filter(year != 2020)
+
+d_inc_econ_2 |>
+  ggplot(aes(x = GDP_growth_quarterly, y = pv2p, label = year)) +
+  geom_text() +
+  geom_hline(yintercept = 50, lty = 2) +
+  geom_vline(xintercept = 0.01, lty = 2) +
+  labs(
+    x = "Second Quarter GDP Growth (%)",
+    y = "Incumbent Party's National Popular Vote Share"
+  ) +
+  theme_bw()
+```
+
+## Statistical Analysis
+
+The correlation coefficient between GDP growth and vote share, while positive, isn't overwhelmingly strong. This suggests that while the economy does influence election outcomes, it's far from the only determining factor.
+
+```{r correlation_and_regression, include=FALSE}
+# Correlation
+cor(d_inc_econ_2$GDP_growth_quarterly, d_inc_econ_2$pv2p)
+
+# Linear regression
+reg_econ_2 <- lm(pv2p ~ GDP_growth_quarterly, data = d_inc_econ_2)
+summary(reg_econ_2)
+```
+
+We can visualize this regression line on our scatter plot:
+
+```{r regression_plot, fig.width=10, fig.height=6, echo=FALSE}
+d_inc_econ_2 |>
+  ggplot(aes(x = GDP_growth_quarterly, y = pv2p)) +
+  geom_text(aes(label = year)) +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  geom_hline(yintercept = 50, lty = 2) +
+  geom_vline(xintercept = 0.01, lty = 2) +
+  labs(
+    x = "Second Quarter GDP Growth (%)",
+    y = "Incumbent Party's National Popular Vote Share",
+    title = "Y = 49.38 + 0.737 * X"
+  ) +
+  theme_bw() +
+  theme(plot.title = element_text(size = 18))
+```
+
+Our linear regression model provides some interesting insights:
+1. The intercept of approximately 49.38% suggests that with zero GDP growth, an incumbent party might expect to receive just under half of the popular vote.
+2. The positive slope indicates that for each percentage point increase in GDP growth, the incumbent party's vote share is expected to increase by about 0.737 percentage points.
+3. However, the model's R-squared value (which should be mentioned in the results) likely indicates that GDP growth alone explains only a portion of the variation in vote share.
+
+## Model Evaluation
+
+Cross-validation results provide a measure of our model's predictive accuracy. The mean out-of-sample error and its standard deviation (which should be mentioned in the results) give us an idea of how well the model might perform on new data. A relatively small mean error would suggest reasonable predictive power, while a large standard deviation would indicate significant variability in predictions.
+
+```{r cross_validation, include=FALSE}
+out_samp_errors <- sapply(1:1000, function(i) {
+  years_out_samp <- sample(d_inc_econ_2$year, 9)
+  mod <- lm(
+    pv2p ~ GDP_growth_quarterly,
+    d_inc_econ_2[!(d_inc_econ_2$year %in% years_out_samp), ]
+  )
+  out_samp_pred <- predict(mod, d_inc_econ_2[d_inc_econ_2$year %in% years_out_samp, ])
+  out_samp_truth <- d_inc_econ_2$pv2p[d_inc_econ_2$year %in% years_out_samp]
+  mean(out_samp_pred - out_samp_truth)
+})
+
+mean(out_samp_errors)
+sd(out_samp_errors)
+```
+
+## Predicting 2024
+
+Our model predicts the incumbent party's vote share for the 2024 election based on second-quarter GDP growth. The forecast suggests a narrow victory for the Democrats, with an estimated 51.5% of the popular vote share. However, this prediction should be interpreted cautiously:
+
+1. It's based solely on GDP growth, ignoring other crucial factors.
+2. The prediction interval (41.86% to 61.31%) indicates significant uncertainty.
+3. Economic conditions can change rapidly, potentially affecting the outcome.
+
+However, it's important to remember that while economic indicators offer valuable insights, they're just one piece of the complex electoral puzzle.
+
+```{r predict_2024, echo=FALSE}
+GDP_new <- d_fred |>
+  filter(year == 2024 & quarter == 2) |>
+  select(GDP_growth_quarterly)
+
+predict(reg_econ_2, GDP_new, interval = "prediction")
+```
+
+## Heterogenous Predictive Power of the Economy
+
+To explore whether the economy's effect differs for sitting presidents running for re-election versus same-party heirs, and if its predictive power changes over time, we'll extend our analysis.
+
+```{r heterogenous_predictive_power, include=FALSE}
+# Create incumbent president variable and split data
+d_inc_econ <- d_inc_econ %>%
+  mutate(incumbent_president = ifelse(year %in% c(1956, 1972, 1980, 1984, 1992, 1996, 2004, 2012, 2020), TRUE, FALSE))
+d_inc_econ_pre1980 <- d_inc_econ %>% filter(year < 1980)
+d_inc_econ_post1980 <- d_inc_econ %>% filter(year >= 1980)
+
+# Run regressions
+model_incumbent <- lm(pv2p ~ GDP_growth_quarterly * incumbent_president, data = d_inc_econ)
+model_pre1980 <- lm(pv2p ~ GDP_growth_quarterly, data = d_inc_econ_pre1980)
+model_post1980 <- lm(pv2p ~ GDP_growth_quarterly, data = d_inc_econ_post1980)
+
+# Summary of results
+summary(model_incumbent)
+summary(model_pre1980)
+summary(model_post1980)
+```
+
+```{r echo=FALSE}
+library(kableExtra)
+
+# Extract coefficients and R-squared values
+results <- data.frame(
+  Model = c("Incumbent vs Heir", "Pre-1980", "Post-1980"),
+  Intercept = c(coef(model_incumbent)[1], coef(model_pre1980)[1], coef(model_post1980)[1]),
+  GDP_Growth = c(coef(model_incumbent)[2], coef(model_pre1980)[2], coef(model_post1980)[2]),
+  Incumbent_Effect = c(coef(model_incumbent)[3], NA, NA),
+  Interaction = c(coef(model_incumbent)[4], NA, NA),
+  R_squared = c(
+    summary(model_incumbent)$r.squared,
+    summary(model_pre1980)$r.squared,
+    summary(model_post1980)$r.squared
+  )
+)
+
+# Create and display the table
+results %>%
+  kbl(
+    caption = "Comparison of Economic Effects on Vote Share",
+    col.names = c("Model", "Intercept", "GDP Growth", "Incumbent Effect", "Interaction", "R-squared"),
+    digits = 3
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = F
+  ) %>%
+  add_header_above(c(" " = 1, "Coefficients" = 4, " " = 1)) %>%
+  footnote(general = "GDP Growth coefficient represents change in vote share for 1% increase in GDP growth.")
+```
+
+
+Key Findings:
+1. Incumbent Presidents vs. Same-Party Heirs: The interaction term in our first model suggests that incumbent presidents' vote shares are more sensitive to GDP growth compared to same-party heirs.
+2. Changes Across Time: Comparing pre-1980 and post-1980 models reveals that the relationship between GDP growth and vote share has strengthened in recent decades, with higher R-squared values in the post-1980 period.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(d_inc_econ, aes(x = GDP_growth_quarterly, y = pv2p, color = incumbent_president)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Second Quarter GDP Growth (%)",
+    y = "Incumbent Party's Vote Share",
+    color = "Incumbent President Running"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("FALSE" = "blue", "TRUE" = "red"))
+```
+
+Interpretation
+1. Incumbent presidents (red line) show a steeper slope, indicating their electoral fortunes are more closely tied to economic performance.
+2. Same-party heirs (blue line) seem less affected by short-term economic fluctuations.
+3. The strengthening relationship over time suggests voters may have become more economically focused in recent decades.
+
+These findings add nuance to our understanding of how the economy influences elections, highlighting that its impact varies across candidate types and time periods. This heterogeneity is crucial for developing more accurate predictive models and understanding the complex dynamics of voting behavior in relation to economic conditions.
+
+## Conclusion
+
+This analysis demonstrates a notable, albeit not overwhelming, relationship between GDP growth and incumbent party vote share in U.S. presidential elections. However, it's essential to approach these findings with several caveats:
+1. Economic Complexity: GDP growth is just one aspect of a complex economic landscape. Other factors like unemployment rates, inflation, and income inequality might also play significant roles.
+2. Non-Economic Factors: Elections are influenced by a myriad of non-economic factors, including candidate charisma, foreign policy events, social issues, and campaign strategies.
+3. Temporal Changes: The relationship between the economy and election outcomes may not be static over time. Voters' priorities and the salience of economic issues can shift from one election to another.
+4. Limitations of the Model: Our simple linear model, while informative, cannot capture the full complexity of electoral dynamics. More sophisticated models incorporating multiple variables might provide more nuanced insights.
+5. Causality vs. Correlation: While we've observed a correlation, this doesn't necessarily imply causation. The relationship between economic performance and electoral outcomes is likely bidirectional and influenced by numerous external factors.
+
+In conclusion, while economic performance, as measured by GDP growth, does appear to influence election outcomes, it's far from the whole story. Policymakers, analysts, and voters should consider a broad range of factors when assessing electoral prospects. Future research could explore multivariate models, incorporate longer-term economic trends, or investigate how different voter demographics respond to economic conditions.

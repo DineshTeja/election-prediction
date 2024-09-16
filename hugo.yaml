@@ -1,0 +1,40 @@
+baseurl: "https://chojeq.com/usa-2024-election-prediction"  # please update this to your actual URL
+languageCode: "en-us"
+title: "Dinesh's 2024 Election Prediction"
+theme: "hugo-xmin"
+googleAnalytics: ""
+disqusShortname: ""
+ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
+footnotereturnlinkcontents: "↩"
+
+permalinks:
+  note: "/note/:year/:month/:day/:slug/"
+  post: "/post/:year/:month/:day/:slug/"
+
+menu:
+  main:
+    - name: Main page
+      url: ""
+      weight: 1
+
+params:
+  description: "Forecasting the 2024 US Presidential Race: Insights from Harvard's GOV 1347"
+  footer: "&copy; Dinesh 2024 -- {Year} | [Github](https://github.com/dineshteja/usa-2024-election-prediction)"
+markup:
+  highlight:
+    codeFences: false
+  goldmark:
+    renderer:
+      unsafe: true
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+          - - \[
+            - \]
+          - - $$
+            - $$
+          inline:
+          - - \(
+            - \)
